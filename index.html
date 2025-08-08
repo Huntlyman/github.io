@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hoot & Holler Band</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0e0f12; --bg-soft:#151821; --ink:#e9eef5; --accent:#f0b429; --muted:#a9b3c1; --max:1080px; }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+    a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+    header{position:sticky;top:0;z-index:10;background:rgba(14,15,18,.8);backdrop-filter:saturate(150%) blur(8px);border-bottom:1px solid #222}
+    .wrap{max-width:var(--max);margin:auto;padding:0 20px}
+    .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.5px}
+    .brand img{width:48px;height:48px;border-radius:50%;border:2px solid var(--accent);background:#0e0f12;object-fit:cover}
+    .menu a{margin-left:18px;font-weight:600;color:var(--ink);opacity:.9} .menu a:hover{opacity:1}
+    .hero{background:radial-gradient(80% 80% at 50% 0%, #1e2331 0%, #0e0f12 60%);padding:96px 0 64px;border-bottom:1px solid #222}
+    .hero h1{font-family:'Libre Baskerville',serif;font-size:clamp(36px,6vw,56px);line-height:1.1;margin:12px 0}
+    .hero p{max-width:760px;color:var(--muted);font-size:clamp(16px,2.4vw,18px)}
+    .cta{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;border:1px solid #2a2f3a;background:#171a23;color:var(--ink);font-weight:700}
+    .btn.primary{background:var(--accent);color:#1b1202;border-color:#e0a419}
+    section{padding:56px 0;border-bottom:1px solid #222}
+    h2{font-family:'Libre Baskerville',serif;font-size:28px;margin:0 0 16px}
+    .two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+    @media(max-width:900px){.two-col{grid-template-columns:1fr}}
+    .card{background:var(--bg-soft);border:1px solid #242938;border-radius:18px;padding:18px}
+    .grid{display:grid;gap:16px} .grid.cols-2{grid-template-columns:repeat(2,1fr)} .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+    @media(max-width:800px){.grid.cols-3{grid-template-columns:1fr 1fr}} @media(max-width:560px){.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}}
+    iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px} .pill{display:inline-block;padding:6px 10px;border:1px solid #2a2f3a;border-radius:999px;color:var(--muted);font-size:12px;margin-right:8px}
+    .list{list-style:none;padding:0;margin:0} .list li{padding:10px 0;border-bottom:1px dashed #2a2f3a}
+    .footer{padding:28px 0;color:var(--muted);font-size:14px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <div class="brand">
+        <img src="hoot-holler-logo-small.png" alt="Hoot & Holler Band logo"/>
+        <span>Hoot & Holler Band</span>
+      </div>
+      <nav class="menu">
+        <a href="#music">Music</a>
+        <a href="#about">About</a>
+        <a href="#book">Book Us</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <span class="pill">Bluegrass • Folk • Traditional • Country</span>
+        <h1>Toe‑tappin' tunes from Virginia's Piedmont</h1>
+        <p>We play front‑porch classics and festival favorites—tight harmonies, driving rhythms, and songs you can sing along to.</p>
+        <div class="cta">
+          <a class="btn primary" href="#book">Book the band</a>
+          <a class="btn" href="#music">Hear a sample</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="music">
+      <div class="wrap two-col">
+        <div class="card">
+          <h2>Watch & Listen</h2>
+          <div class="grid cols-2">
+            <iframe src="https://www.youtube.com/embed/LZK_sZmWbCA?start=3380" title="Hoot & Holler — Live (starts at 56:20)"></iframe>
+          </div>
+          <!-- Restored Facebook links section -->
+          <p style="color:var(--muted);margin-top:10px">
+            More clips:
+            <a href="https://www.facebook.com/share/v/16xJrvqA2s/" target="_blank" rel="noopener">Facebook Clip 1</a> ·
+            <a href="https://www.facebook.com/share/p/19Pi1hZkyL/" target="_blank" rel="noopener">Facebook Clip 2</a>
+          </p>
+        </div>
+        <div class="card">
+          <h2>Set Highlights</h2>
+          <ul class="list">
+            <li>Will the Circle Be Unbroken</li>
+            <li>I'll Fly Away</li>
+            <li>Ashokan Farewell</li>
+            <li>Walkin' After Midnight</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="wrap two-col">
+        <div class="card">
+          <h2>About the Band</h2>
+          <p>The Hoot & Holler Band brings a lively mix of bluegrass, folk, and country to every stage.</p>
+        </div>
+        <div class="card">
+          <h2>Photos</h2>
+          <p>Add a gallery link here when ready.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="book">
+      <div class="wrap two-col">
+        <div class="card">
+          <h2>Booking & Contact</h2>
+          <p><strong>Contact:</strong> Hunt Lyman • <a href="mailto:Huntingtonlyman@gmail.com">Huntingtonlyman@gmail.com</a> • <a href="tel:+17039997127">(703) 999‑7127</a></p>
+          <p><strong>Web:</strong> <a href="https://huntlyman.github.io/hoothollerband" target="_blank">huntlyman.github.io/hoothollerband</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">© <span id="year"></span> Hoot & Holler Band</div>
+  </footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
