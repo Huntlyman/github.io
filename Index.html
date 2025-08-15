@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hunt Lyman — Weather (Middleburg & Berryville)</title>
+  <meta name="description" content="Current weather for Middleburg and Berryville (Shenandoah) with a clean, lightweight widget." />
+  <style>
+    :root{
+      --bg:#0f172a;           /* slate-900 */
+      --panel:#111827;        /* gray-900 */
+      --muted:#94a3b8;        /* slate-400 */
+      --text:#e5e7eb;         /* gray-200 */
+      --accent:#38bdf8;       /* sky-400 */
+      --ok:#22c55e;           /* green-500 */
+      --warn:#f59e0b;         /* amber-500 */
+      --bad:#ef4444;          /* red-500 */
+      --card:#0b1225;         /* deep panel */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% 0%, #0b132b 0%, var(--bg) 40%, #0a0f1f 100%);
+      color:var(--text);
+      min-height:100svh; display:flex; flex-direction:column; gap:24px;
+    }
+    header{
+      padding:28px 20px 0; text-align:center;
+    }
+    header h1{margin:0 0 6px; font-size:clamp(20px, 3.2vw, 36px); letter-spacing:.4px}
+    header p{margin:0; color:var(--muted); font-size:clamp(12px, 1.7vw, 16px)}
+
+    .container{
+      width:min(1100px, 92%); margin:10px auto 40px; display:grid; gap:18px;
+      grid-template-columns: repeat(auto-fit, minmax(290px,1fr));
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(148,163,184,.14);
+      border-radius:var(--radius); padding:18px 16px; box-shadow:var(--shadow);
+    }
+    .card h2{margin:0 0 2px; font-size:20px}
+    .subtle{color:var(--muted); font-size:12px}
+
+    .current{
+      display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center; margin-top:10px;
+    }
+    .temp{
+      font-size:46px; font-weight:700; line-height:1; margin:0;
+    }
+    .temp small{font-weight:600; font-size:16px; color:var(--muted)}
+
+    .meta{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px}
+    .metric{background:rgba(148,163,184,.08); border-radius:12px; padding:10px}
+    .metric .label{font-size:12px; color:var(--muted)}
+    .metric .value{font-size:16px; font-weight:600}
+
+    .forecast{
+      display:flex; gap:8px; overflow:auto; padding-top:8px; margin-top:8px; border-top:1px dashed rgba(148,163,184,.25)
+    }
+    .hour{
+      min-width:86px; background:rgba(148,163,184,.06); border:1px solid rgba(148,163,184,.15);
+      border-radius:12px; padding:8px; text-align:center
+    }
+    .hour .t{font-weight:700}
+    .hour .tt{font-size:12px; color:var(--muted)}
+
+    .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; border-radius:999px; padding:6px 10px; border:1px solid rgba(148,163,184,.2)}
+    .ok{background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.35)}
+    .warn{background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.35)}
+    .bad{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.35)}
+
+    footer{color:var(--muted); text-align:center; font-size:12px; padding:0 0 24px}
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .stack{display:flex; flex-direction:column; gap:2px}
+    .big-icon{font-size:42px; line-height:1}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Current Conditions — Middleburg & Berryville</h1>
+    <p>Lightweight, key‑free weather pulled live from Open‑Meteo. Refresh to update.</p>
+  </header>
+
+  <main class="container">
+    <!-- Middleburg -->
+    <section class="card" id="card-middleburg">
+      <h2>Middleburg, VA</h2>
+      <div class="subtle" id="mid-updated">Loading…</div>
+      <div class="current">
+        <div class="big-icon" id="mid-icon" aria-hidden="true">⛅</div>
+        <div class="stack">
+          <p class="temp" id="mid-temp">—<small>°F</small></p>
+          <div class="badge ok" id="mid-badge">Good weather</div>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="metric"><div class="label">Feels like</div><div class="value" id="mid-feels">—</div></div>
+        <div class="metric"><div class="label">Wind</div><div class="value" id="mid-wind">—</div></div>
+        <div class="metric"><div class="label">Precip (1h)</div><div class="value" id="mid-precip">—</div></div>
+        <div class="metric"><div class="label">Conditions</div><div class="value" id="mid-cond">—</div></div>
+      </div>
+      <div class="forecast" id="mid-forecast" aria-label="Next hours forecast"></div>
+    </section>
+
+    <!-- Berryville / Shenandoah -->
+    <section class="card" id="card-berryville">
+      <h2>Berryville, VA (Shenandoah)</h2>
+      <div class="subtle" id="ber-updated">Loading…</div>
+      <div class="current">
+        <div class="big-icon" id="ber-icon" aria-hidden="true">⛅</div>
+        <div class="stack">
+          <p class="temp" id="ber-temp">—<small>°F</small></p>
+          <div class="badge ok" id="ber-badge">Good weather</div>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="metric"><div class="label">Feels like</div><div class="value" id="ber-feels">—</div></div>
+        <div class="metric"><div class="label">Wind</div><div class="value" id="ber-wind">—</div></div>
+        <div class="metric"><div class="label">Precip (1h)</div><div class="value" id="ber-precip">—</div></div>
+        <div class="metric"><div class="label">Conditions</div><div class="value" id="ber-cond">—</div></div>
+      </div>
+      <div class="forecast" id="ber-forecast" aria-label="Next hours forecast"></div>
+    </section>
+  </main>
+
+  <footer>
+    Data courtesy of <a href="https://open-meteo.com/" target="_blank" rel="noreferrer noopener">Open‑Meteo</a>. Icons mapped from WMO weather codes.
+  </footer>
+
+  <script>
+    // --- Coordinates ---
+    const LOCATIONS = {
+      middleburg: { name: 'Middleburg, VA', lat: 38.968, lon: -77.737 },
+      berryville: { name: 'Berryville, VA', lat: 39.151, lon: -77.981 }
+    };
+
+    const codeToIcon = (code, isDay) => {
+      // WMO weather code quick map → emoji; swap for your SVG set if desired
+      const sun = '☀️', moon='🌙', cloud='☁️', sunCloud='⛅', rain='🌧️', t='⛈️', snow='🌨️', fog='🌫️';
+      const day = isDay ? 1 : 0;
+      if ([0].includes(code)) return day ? sun : moon;             // clear
+      if ([1,2].includes(code)) return sunCloud;                   // mostly/some clouds
+      if ([3].includes(code)) return cloud;                        // overcast
+      if ([45,48].includes(code)) return fog;                      // fog
+      if ([51,53,55,61,63,65,80,81,82].includes(code)) return rain;// drizzle/rain
+      if ([56,57,66,67].includes(code)) return rain;               // freezing drizzle/rain
+      if ([71,73,75,77,85,86].includes(code)) return snow;         // snow
+      if ([95,96,99].includes(code)) return t;                     // thunder
+      return sunCloud;
+    };
+
+    const codeToText = (code) => {
+      const map = {
+        0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',
+        51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',56:'Freezing drizzle',57:'Freezing drizzle',
+        61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Heavy freezing rain',
+        71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Rain showers',81:'Heavy showers',82:'Violent rain',
+        85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunder w/ hail',99:'Thunder w/ heavy hail'
+      };
+      return map[code] || '—';
+    };
+
+    const degToCompass = (deg) => {
+      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      return dirs[Math.round(deg / 22.5) % 16];
+    };
+
+    const fmt = (n, suffix='') => n == null ? '—' : `${Math.round(n)}${suffix}`;
+
+    async function loadLocation({lat, lon}, prefix){
+      // Open‑Meteo API — no key needed. Fahrenheit + mph + precipitation.
+      const url = new URL('https://api.open-meteo.com/v1/forecast');
+      url.search = new URLSearchParams({
+        latitude: lat,
+        longitude: lon,
+        current: ['temperature_2m','apparent_temperature','is_day','precipitation','weather_code','wind_speed_10m','wind_direction_10m'].join(','),
+        hourly: ['temperature_2m','precipitation_probability','weather_code','wind_speed_10m'].join(','),
+        forecast_days: 2,
+        timezone: 'auto',
+        temperature_unit: 'fahrenheit',
+        wind_speed_unit: 'mph',
+        precipitation_unit: 'inch'
+      }).toString();
+
+      try{
+        const res = await fetch(url.toString());
+        if(!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+
+        const c = data.current;
+        const icon = codeToIcon(c.weather_code, c.is_day === 1);
+        const condText = codeToText(c.weather_code);
+        const badge = document.getElementById(`${prefix}-badge`);
+
+        // Update current
+        document.getElementById(`${prefix}-icon`).textContent = icon;
+        document.getElementById(`${prefix}-temp`).innerHTML = `${Math.round(c.temperature_2m)}<small>°F</small>`;
+        document.getElementById(`${prefix}-feels`).textContent = `${Math.round(c.apparent_temperature)}°F`;
+        document.getElementById(`${prefix}-wind`).textContent = `${Math.round(c.wind_speed_10m)} mph ${degToCompass(c.wind_direction_10m)}`;
+        document.getElementById(`${prefix}-precip`).textContent = `${c.precipitation?.toFixed(2)} in`;
+        document.getElementById(`${prefix}-cond`).textContent = condText;
+        document.getElementById(`${prefix}-updated`).textContent = `Updated ${new Date().toLocaleString()}`;
+
+        // Badge mood based on wind + precip
+        const windy = (c.wind_speed_10m || 0) >= 15;
+        const wet = (c.precipitation || 0) >= 0.05;
+        const cls = wet ? 'bad' : windy ? 'warn' : 'ok';
+        badge.className = `badge ${cls}`;
+        badge.textContent = wet ? 'Wet' : windy ? 'Breezy' : 'Good weather';
+
+        // Build next 12 hours forecast snapshots
+        const hoursEl = document.getElementById(`${prefix}-forecast`);
+        hoursEl.innerHTML = '';
+        const now = Date.now();
+        const times = data.hourly.time.map(t => new Date(t).getTime());
+        for(let i=0, shown=0; i<times.length && shown<12; i++){
+          if(times[i] < now) continue;
+          const temp = data.hourly.temperature_2m[i];
+          const wcode = data.hourly.weather_code[i];
+          const pprob = data.hourly.precipitation_probability[i];
+          const wicon = codeToIcon(wcode, true);
+          const tlabel = new Date(times[i]).toLocaleTimeString([], {hour:'numeric'});
+
+          const box = document.createElement('div');
+          box.className = 'hour';
+          box.innerHTML = `
+            <div class="tt">${tlabel}</div>
+            <div class="big-icon" aria-hidden="true">${wicon}</div>
+            <div class="t">${Math.round(temp)}°</div>
+            <div class="tt">💧 ${pprob ?? 0}%</div>
+          `;
+          hoursEl.appendChild(box);
+          shown++;
+        }
+
+      } catch (e){
+        console.error(e);
+        document.getElementById(`${prefix}-updated`).textContent = 'Unable to load weather.';
+        const card = document.getElementById(`card-${prefix.split('-')[0]}`);
+        card && (card.style.opacity = .8);
+      }
+    }
+
+    // Kick off loads
+    loadLocation(LOCATIONS.middleburg, 'mid');
+    loadLocation(LOCATIONS.berryville, 'ber');
+  </script>
+</body>
+</html>
