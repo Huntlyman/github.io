@@ -3,193 +3,105 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hunt Lyman — Weather (Middleburg & Berryville)</title>
-  <meta name="description" content="Current weather for Middleburg and Berryville (Shenandoah) with a clean, lightweight widget." />
+  <title>Hunt Lyman — Weather & River Conditions</title>
+  <meta name="description" content="Current weather and river data for Middleburg/Goose Creek and Berryville/Shenandoah." />
   <style>
     :root{
-      --bg:#0f172a;           /* slate-900 */
-      --panel:#111827;        /* gray-900 */
-      --muted:#94a3b8;        /* slate-400 */
-      --text:#e5e7eb;         /* gray-200 */
-      --accent:#38bdf8;       /* sky-400 */
-      --ok:#22c55e;           /* green-500 */
-      --warn:#f59e0b;         /* amber-500 */
-      --bad:#ef4444;          /* red-500 */
-      --card:#0b1225;         /* deep panel */
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 18px;
+      --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#38bdf8;
+      --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --card:#0b1225; --shadow: 0 10px 30px rgba(0,0,0,.35); --radius: 18px;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
       background: radial-gradient(1200px 800px at 10% 0%, #0b132b 0%, var(--bg) 40%, #0a0f1f 100%);
-      color:var(--text);
-      min-height:100svh; display:flex; flex-direction:column; gap:24px;
+      color:var(--text); min-height:100svh; display:flex; flex-direction:column; gap:24px;
     }
-    header{
-      padding:28px 20px 0; text-align:center;
-    }
-    header h1{margin:0 0 6px; font-size:clamp(20px, 3.2vw, 36px); letter-spacing:.4px}
+    header{text-align:center; padding:28px 20px 0}
+    header h1{margin:0 0 6px; font-size:clamp(20px, 3.2vw, 36px)}
     header p{margin:0; color:var(--muted); font-size:clamp(12px, 1.7vw, 16px)}
 
-    .container{
-      width:min(1100px, 92%); margin:10px auto 40px; display:grid; gap:18px;
-      grid-template-columns: repeat(auto-fit, minmax(290px,1fr));
-    }
-
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid rgba(148,163,184,.14);
-      border-radius:var(--radius); padding:18px 16px; box-shadow:var(--shadow);
-    }
+    .row{width:min(1100px, 92%); margin:10px auto 40px; display:grid; grid-template-columns: repeat(auto-fit,minmax(290px,1fr)); gap:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); border:1px solid rgba(148,163,184,.14); border-radius:var(--radius); padding:18px 16px; box-shadow:var(--shadow)}
     .card h2{margin:0 0 2px; font-size:20px}
     .subtle{color:var(--muted); font-size:12px}
-
-    .current{
-      display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center; margin-top:10px;
-    }
-    .temp{
-      font-size:46px; font-weight:700; line-height:1; margin:0;
-    }
+    .current{display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center; margin-top:10px}
+    .temp{font-size:46px; font-weight:700; line-height:1; margin:0}
     .temp small{font-weight:600; font-size:16px; color:var(--muted)}
-
     .meta{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px}
     .metric{background:rgba(148,163,184,.08); border-radius:12px; padding:10px}
     .metric .label{font-size:12px; color:var(--muted)}
     .metric .value{font-size:16px; font-weight:600}
-
-    .forecast{
-      display:flex; gap:8px; overflow:auto; padding-top:8px; margin-top:8px; border-top:1px dashed rgba(148,163,184,.25)
-    }
-    .hour{
-      min-width:86px; background:rgba(148,163,184,.06); border:1px solid rgba(148,163,184,.15);
-      border-radius:12px; padding:8px; text-align:center
-    }
-    .hour .t{font-weight:700}
-    .hour .tt{font-size:12px; color:var(--muted)}
-
+    .forecast{display:flex; gap:8px; overflow:auto; padding-top:8px; margin-top:8px; border-top:1px dashed rgba(148,163,184,.25)}
+    .hour{min-width:86px; background:rgba(148,163,184,.06); border:1px solid rgba(148,163,184,.15); border-radius:12px; padding:8px; text-align:center}
     .badge{display:inline-flex; align-items:center; gap:6px; font-size:12px; border-radius:999px; padding:6px 10px; border:1px solid rgba(148,163,184,.2)}
     .ok{background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.35)}
     .warn{background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.35)}
     .bad{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.35)}
-
     footer{color:var(--muted); text-align:center; font-size:12px; padding:0 0 24px}
     a{color:var(--accent); text-decoration:none}
     a:hover{text-decoration:underline}
-
     .stack{display:flex; flex-direction:column; gap:2px}
     .big-icon{font-size:42px; line-height:1}
   </style>
 </head>
 <body>
   <header>
-    <h1>Current Conditions — Middleburg & Berryville</h1>
-    <p>Lightweight, key‑free weather pulled live from Open‑Meteo, plus live river gauges from USGS. Refresh to update.</p>
+    <h1>Weather & River Conditions</h1>
+    <p>Live weather from Open‑Meteo and river gauges from USGS. Refresh to update.</p>
   </header>
 
-  <main class="container">
-    <!-- Middleburg -->
+  <!-- Middleburg + Goose Creek row -->
+  <div class="row">
     <section class="card" id="card-middleburg">
       <h2>Middleburg, VA</h2>
       <div class="subtle" id="mid-updated">Loading…</div>
-      <div class="current">
-        <div class="big-icon" id="mid-icon" aria-hidden="true">⛅</div>
-        <div class="stack">
-          <p class="temp" id="mid-temp">—<small>°F</small></p>
-          <div class="badge ok" id="mid-badge">Good weather</div>
-        </div>
-      </div>
+      <div class="current"><div class="big-icon" id="mid-icon">⛅</div><div class="stack"><p class="temp" id="mid-temp">—<small>°F</small></p><div class="badge ok" id="mid-badge">Good weather</div></div></div>
       <div class="meta">
         <div class="metric"><div class="label">Feels like</div><div class="value" id="mid-feels">—</div></div>
         <div class="metric"><div class="label">Wind</div><div class="value" id="mid-wind">—</div></div>
         <div class="metric"><div class="label">Precip (1h)</div><div class="value" id="mid-precip">—</div></div>
         <div class="metric"><div class="label">Conditions</div><div class="value" id="mid-cond">—</div></div>
       </div>
-      <div class="forecast" id="mid-forecast" aria-label="Next hours forecast"></div>
+      <div class="forecast" id="mid-forecast"></div>
     </section>
+    <section class="card" id="card-goose">
+      <h2>Goose Creek — near Middleburg</h2>
+      <div class="subtle" id="goose-updated">Loading…</div>
+      <div class="meta">
+        <div class="metric"><div class="label">Discharge</div><div class="value" id="goose-flow">—</div></div>
+        <div class="metric"><div class="label">Gage height</div><div class="value" id="goose-stage">—</div></div>
+        <div class="metric"><div class="label">Site</div><div class="value"><a href="https://waterdata.usgs.gov/monitoring-location/01643700" target="_blank">01643700</a></div></div>
+      </div>
+    </section>
+  </div>
 
-    <!-- Berryville / Shenandoah -->
+  <!-- Berryville + Shenandoah row -->
+  <div class="row">
     <section class="card" id="card-berryville">
       <h2>Berryville, VA (Shenandoah)</h2>
       <div class="subtle" id="ber-updated">Loading…</div>
-      <div class="current">
-        <div class="big-icon" id="ber-icon" aria-hidden="true">⛅</div>
-        <div class="stack">
-          <p class="temp" id="ber-temp">—<small>°F</small></p>
-          <div class="badge ok" id="ber-badge">Good weather</div>
-        </div>
-      </div>
+      <div class="current"><div class="big-icon" id="ber-icon">⛅</div><div class="stack"><p class="temp" id="ber-temp">—<small>°F</small></p><div class="badge ok" id="ber-badge">Good weather</div></div></div>
       <div class="meta">
         <div class="metric"><div class="label">Feels like</div><div class="value" id="ber-feels">—</div></div>
         <div class="metric"><div class="label">Wind</div><div class="value" id="ber-wind">—</div></div>
         <div class="metric"><div class="label">Precip (1h)</div><div class="value" id="ber-precip">—</div></div>
         <div class="metric"><div class="label">Conditions</div><div class="value" id="ber-cond">—</div></div>
       </div>
-      <div class="forecast" id="ber-forecast" aria-label="Next hours forecast"></div>
+      <div class="forecast" id="ber-forecast"></div>
     </section>
-      <!-- Rivers -->
-    <section class="card" id="card-goose">
-      <h2>Goose Creek — near Middleburg (USGS 01643700)</h2>
-      <div class="subtle" id="goose-updated">Loading…</div>
-      <div class="meta">
-        <div class="metric"><div class="label">Discharge</div><div class="value" id="goose-flow">—</div></div>
-        <div class="metric"><div class="label">Gage height</div><div class="value" id="goose-stage">—</div></div>
-        <div class="metric"><div class="label">Site</div><div class="value"><a href="https://waterdata.usgs.gov/monitoring-location/01643700" target="_blank" rel="noreferrer noopener">01643700</a></div></div>
-        <div class="metric"><div class="label">Notes</div><div class="value">USGS real-time values</div></div>
-      </div>
-    </section>
-
     <section class="card" id="card-shen">
-      <h2>Shenandoah River — at Millville (USGS 01636500)</h2>
+      <h2>Shenandoah River — at Millville</h2>
       <div class="subtle" id="shen-updated">Loading…</div>
       <div class="meta">
         <div class="metric"><div class="label">Discharge</div><div class="value" id="shen-flow">—</div></div>
         <div class="metric"><div class="label">Gage height</div><div class="value" id="shen-stage">—</div></div>
-        <div class="metric"><div class="label">Site</div><div class="value"><a href="https://waterdata.usgs.gov/monitoring-location/01636500" target="_blank" rel="noreferrer noopener">01636500</a></div></div>
-        <div class="metric"><div class="label">Notes</div><div class="value">USGS real-time values</div></div>
+        <div class="metric"><div class="label">Site</div><div class="value"><a href="https://waterdata.usgs.gov/monitoring-location/01636500" target="_blank">01636500</a></div></div>
       </div>
     </section>
-  </main>
+  </div>
 
   <footer>
-    Data courtesy of <a href="https://open-meteo.com/" target="_blank" rel="noreferrer noopener">Open‑Meteo</a> and <a href="https://waterservices.usgs.gov/" target="_blank" rel="noreferrer noopener">USGS Water Services</a>. Icons mapped from WMO weather codes.
+    Data courtesy of <a href="https://open-meteo.com/" target="_blank">Open‑Meteo</a> and <a href="https://waterservices.usgs.gov/" target="_blank">USGS Water Services</a>.
   </footer>
-
-  <script>
-    // Append USGS loader without touching existing weather code
-    async function loadUSGS(site, prefix){
-      const url = new URL('https://waterservices.usgs.gov/nwis/iv/');
-      url.search = new URLSearchParams({ format:'json', sites: site, parameterCd: '00060,00065' }).toString();
-      try{
-        const res = await fetch(url.toString());
-        if(!res.ok) throw new Error('USGS request failed');
-        const data = await res.json();
-        const series = data.value?.timeSeries || [];
-        const findVal = (code) => {
-          const s = series.find(s => s.variable?.variableCode?.[0]?.value === code);
-          const v = s?.values?.[0]?.value; if(!v || v.length === 0) return null;
-          return v[v.length-1]; // { value, dateTime }
-        };
-        const q = findVal('00060'); // discharge cfs
-        const h = findVal('00065'); // gage height ft
-        if(q){ document.getElementById(`${prefix}-flow`).textContent = `${Number(q.value).toLocaleString()} cfs`; }
-        if(h){ document.getElementById(`${prefix}-stage`).textContent = `${Number(h.value).toFixed(2)} ft`; }
-        const updatedIso = (q?.dateTime || h?.dateTime);
-        if(updatedIso){
-          const t = new Date(updatedIso);
-          const el = document.getElementById(`${prefix}-updated`);
-          if(el) el.textContent = `Updated ${t.toLocaleString()}`;
-        }
-      } catch(err){
-        console.error(err);
-        const el = document.getElementById(`${prefix}-updated`);
-        if(el) el.textContent = 'Unable to load USGS data.';
-      }
-    }
-
-    // Start USGS loads
-    loadUSGS('01643700','goose'); // Goose Creek near Middleburg, VA
-    loadUSGS('01636500','shen');  // Shenandoah River at Millville, WV
-  </script>
 </body>
 </html>
