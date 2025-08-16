@@ -77,7 +77,7 @@
 
   <!-- Berryville + Shenandoah row -->
   <div class="row">
-    <section class="card" id="card-berryville">
+    <section class="card" id="boyce">
       <h2>Berryville, VA (Shenandoah)</h2>
       <div class="subtle" id="ber-updated">Loading…</div>
       <div class="current"><div class="big-icon" id="ber-icon">⛅</div><div class="stack"><p class="temp" id="ber-temp">—<small>°F</small></p><div class="badge ok" id="ber-badge">Good weather</div></div></div>
@@ -108,7 +108,7 @@
     // --- Coordinates ---
     const LOCATIONS = {
       middleburg: { name: 'Middleburg, VA', lat: 38.968, lon: -77.737 },
-      berryville: { name: 'Berryville, VA', lat: 39.151, lon: -77.981 }
+        boyce: { name: 'Boyce, VA', lat: 39.091, lon: -78.059 }
     };
 
     const codeToIcon = (code, isDay) => {
@@ -227,7 +227,7 @@
 
     // Kick off loads
     loadLocation(LOCATIONS.middleburg, 'mid');
-    loadLocation(LOCATIONS.berryville, 'ber');
+    loadLocation(LOCATIONS.boyce, 'ber');
     loadUSGS('01643700','goose');
     loadUSGS('01636500','shen');
   </script>
