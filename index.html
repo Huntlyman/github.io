@@ -103,5 +103,133 @@
   <footer>
     Data courtesy of <a href="https://open-meteo.com/" target="_blank">Open‑Meteo</a> and <a href="https://waterservices.usgs.gov/" target="_blank">USGS Water Services</a>.
   </footer>
+
+  <script>
+    // --- Coordinates ---
+    const LOCATIONS = {
+      middleburg: { name: 'Middleburg, VA', lat: 38.968, lon: -77.737 },
+      berryville: { name: 'Berryville, VA', lat: 39.151, lon: -77.981 }
+    };
+
+    const codeToIcon = (code, isDay) => {
+      const sun = '☀️', moon='🌙', cloud='☁️', sunCloud='⛅', rain='🌧️', t='⛈️', snow='🌨️', fog='🌫️';
+      const day = isDay ? 1 : 0;
+      if ([0].includes(code)) return day ? sun : moon;
+      if ([1,2].includes(code)) return sunCloud;
+      if ([3].includes(code)) return cloud;
+      if ([45,48].includes(code)) return fog;
+      if ([51,53,55,61,63,65,80,81,82].includes(code)) return rain;
+      if ([56,57,66,67].includes(code)) return rain;
+      if ([71,73,75,77,85,86].includes(code)) return snow;
+      if ([95,96,99].includes(code)) return t;
+      return sunCloud;
+    };
+
+    const codeToText = (code) => {
+      const map = {0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',56:'Freezing drizzle',57:'Freezing drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Heavy freezing rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Rain showers',81:'Heavy showers',82:'Violent rain',85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunder w/ hail',99:'Thunder w/ heavy hail'};
+      return map[code] || '—';
+    };
+
+    const degToCompass = (deg) => {
+      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      return dirs[Math.round(deg / 22.5) % 16];
+    };
+
+    async function loadLocation({lat, lon}, prefix){
+      const url = new URL('https://api.open-meteo.com/v1/forecast');
+      url.search = new URLSearchParams({
+        latitude: lat,
+        longitude: lon,
+        current: ['temperature_2m','apparent_temperature','is_day','precipitation','weather_code','wind_speed_10m','wind_direction_10m'].join(','),
+        hourly: ['temperature_2m','precipitation_probability','weather_code','wind_speed_10m'].join(','),
+        forecast_days: 2,
+        timezone: 'auto',
+        temperature_unit: 'fahrenheit',
+        wind_speed_unit: 'mph',
+        precipitation_unit: 'inch'
+      }).toString();
+
+      try{
+        const res = await fetch(url.toString());
+        if(!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        const c = data.current;
+        document.getElementById(prefix+'-icon').textContent = codeToIcon(c.weather_code, c.is_day === 1);
+        document.getElementById(prefix+'-temp').innerHTML = `${Math.round(c.temperature_2m)}<small>°F</small>`;
+        document.getElementById(prefix+'-feels').textContent = `${Math.round(c.apparent_temperature)}°F`;
+        document.getElementById(prefix+'-wind').textContent = `${Math.round(c.wind_speed_10m)} mph ${degToCompass(c.wind_direction_10m)}`;
+        document.getElementById(prefix+'-precip').textContent = `${(c.precipitation ?? 0).toFixed(2)} in`;
+        document.getElementById(prefix+'-cond').textContent = codeToText(c.weather_code);
+        document.getElementById(prefix+'-updated').textContent = `Updated ${new Date().toLocaleString()}`;
+        const badge = document.getElementById(prefix+'-badge');
+        const windy = (c.wind_speed_10m || 0) >= 15;
+        const wet = (c.precipitation || 0) >= 0.05;
+        const cls = wet ? 'bad' : windy ? 'warn' : 'ok';
+        badge.className = `badge ${cls}`;
+        badge.textContent = wet ? 'Wet' : windy ? 'Breezy' : 'Good weather';
+
+        // next 12 hours
+        const hoursEl = document.getElementById(prefix+'-forecast');
+        if(hoursEl){
+          hoursEl.innerHTML = '';
+          const now = Date.now();
+          const times = data.hourly.time.map(t => new Date(t).getTime());
+          for(let i=0, shown=0; i<times.length && shown<12; i++){
+            if(times[i] < now) continue;
+            const temp = data.hourly.temperature_2m[i];
+            const wcode = data.hourly.weather_code[i];
+            const pprob = data.hourly.precipitation_probability[i];
+            const wicon = codeToIcon(wcode, true);
+            const tlabel = new Date(times[i]).toLocaleTimeString([], {hour:'numeric'});
+            const box = document.createElement('div');
+            box.className = 'hour';
+            box.innerHTML = `<div class="tt">${tlabel}</div><div class="big-icon">${wicon}</div><div class="t">${Math.round(temp)}°</div><div class="tt">💧 ${pprob ?? 0}%</div>`;
+            hoursEl.appendChild(box);
+            shown++;
+          }
+        }
+      } catch(e){
+        console.error(e);
+        const el = document.getElementById(prefix+'-updated');
+        if(el) el.textContent = 'Unable to load weather.';
+      }
+    }
+
+    // --- USGS River data ---
+    async function loadUSGS(site, prefix){
+      const url = new URL('https://waterservices.usgs.gov/nwis/iv/');
+      url.search = new URLSearchParams({ format:'json', sites: site, parameterCd: '00060,00065' }).toString();
+      try{
+        const res = await fetch(url.toString());
+        if(!res.ok) throw new Error('USGS request failed');
+        const data = await res.json();
+        const series = data.value?.timeSeries || [];
+        const findVal = (code) => {
+          const s = series.find(s => s.variable?.variableCode?.[0]?.value === code);
+          const v = s?.values?.[0]?.value; if(!v || v.length === 0) return null;
+          return v[v.length-1];
+        };
+        const q = findVal('00060');
+        const h = findVal('00065');
+        const flowEl = document.getElementById(prefix+'-flow');
+        const stageEl = document.getElementById(prefix+'-stage');
+        if(flowEl && q) flowEl.textContent = `${Number(q.value).toLocaleString()} cfs`;
+        if(stageEl && h) stageEl.textContent = `${Number(h.value).toFixed(2)} ft`;
+        const updatedIso = (q?.dateTime || h?.dateTime);
+        const updEl = document.getElementById(prefix+'-updated');
+        if(updatedIso && updEl){ updEl.textContent = `Updated ${new Date(updatedIso).toLocaleString()}`; }
+      } catch(err){
+        console.error(err);
+        const el = document.getElementById(prefix+'-updated');
+        if(el) el.textContent = 'Unable to load USGS data.';
+      }
+    }
+
+    // Kick off loads
+    loadLocation(LOCATIONS.middleburg, 'mid');
+    loadLocation(LOCATIONS.berryville, 'ber');
+    loadUSGS('01643700','goose');
+    loadUSGS('01636500','shen');
+  </script>
 </body>
 </html>
