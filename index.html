@@ -84,7 +84,7 @@
 <body>
   <header>
     <h1>Current Conditions — Middleburg & Berryville</h1>
-    <p>Lightweight, key‑free weather pulled live from Open‑Meteo. Refresh to update.</p>
+    <p>Lightweight, key‑free weather pulled live from Open‑Meteo, plus live river gauges from USGS. Refresh to update.</p>
   </header>
 
   <main class="container">
@@ -127,129 +127,69 @@
       </div>
       <div class="forecast" id="ber-forecast" aria-label="Next hours forecast"></div>
     </section>
+      <!-- Rivers -->
+    <section class="card" id="card-goose">
+      <h2>Goose Creek — near Middleburg (USGS 01643700)</h2>
+      <div class="subtle" id="goose-updated">Loading…</div>
+      <div class="meta">
+        <div class="metric"><div class="label">Discharge</div><div class="value" id="goose-flow">—</div></div>
+        <div class="metric"><div class="label">Gage height</div><div class="value" id="goose-stage">—</div></div>
+        <div class="metric"><div class="label">Site</div><div class="value"><a href="https://waterdata.usgs.gov/monitoring-location/01643700" target="_blank" rel="noreferrer noopener">01643700</a></div></div>
+        <div class="metric"><div class="label">Notes</div><div class="value">USGS real-time values</div></div>
+      </div>
+    </section>
+
+    <section class="card" id="card-shen">
+      <h2>Shenandoah River — at Millville (USGS 01636500)</h2>
+      <div class="subtle" id="shen-updated">Loading…</div>
+      <div class="meta">
+        <div class="metric"><div class="label">Discharge</div><div class="value" id="shen-flow">—</div></div>
+        <div class="metric"><div class="label">Gage height</div><div class="value" id="shen-stage">—</div></div>
+        <div class="metric"><div class="label">Site</div><div class="value"><a href="https://waterdata.usgs.gov/monitoring-location/01636500" target="_blank" rel="noreferrer noopener">01636500</a></div></div>
+        <div class="metric"><div class="label">Notes</div><div class="value">USGS real-time values</div></div>
+      </div>
+    </section>
   </main>
 
   <footer>
-    Data courtesy of <a href="https://open-meteo.com/" target="_blank" rel="noreferrer noopener">Open‑Meteo</a>. Icons mapped from WMO weather codes.
+    Data courtesy of <a href="https://open-meteo.com/" target="_blank" rel="noreferrer noopener">Open‑Meteo</a> and <a href="https://waterservices.usgs.gov/" target="_blank" rel="noreferrer noopener">USGS Water Services</a>. Icons mapped from WMO weather codes.
   </footer>
 
   <script>
-    // --- Coordinates ---
-    const LOCATIONS = {
-      middleburg: { name: 'Middleburg, VA', lat: 38.968, lon: -77.737 },
-      berryville: { name: 'Berryville, VA', lat: 39.151, lon: -77.981 }
-    };
-
-    const codeToIcon = (code, isDay) => {
-      // WMO weather code quick map → emoji; swap for your SVG set if desired
-      const sun = '☀️', moon='🌙', cloud='☁️', sunCloud='⛅', rain='🌧️', t='⛈️', snow='🌨️', fog='🌫️';
-      const day = isDay ? 1 : 0;
-      if ([0].includes(code)) return day ? sun : moon;             // clear
-      if ([1,2].includes(code)) return sunCloud;                   // mostly/some clouds
-      if ([3].includes(code)) return cloud;                        // overcast
-      if ([45,48].includes(code)) return fog;                      // fog
-      if ([51,53,55,61,63,65,80,81,82].includes(code)) return rain;// drizzle/rain
-      if ([56,57,66,67].includes(code)) return rain;               // freezing drizzle/rain
-      if ([71,73,75,77,85,86].includes(code)) return snow;         // snow
-      if ([95,96,99].includes(code)) return t;                     // thunder
-      return sunCloud;
-    };
-
-    const codeToText = (code) => {
-      const map = {
-        0:'Clear',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',
-        51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',56:'Freezing drizzle',57:'Freezing drizzle',
-        61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Heavy freezing rain',
-        71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Rain showers',81:'Heavy showers',82:'Violent rain',
-        85:'Snow showers',86:'Heavy snow showers',95:'Thunderstorm',96:'Thunder w/ hail',99:'Thunder w/ heavy hail'
-      };
-      return map[code] || '—';
-    };
-
-    const degToCompass = (deg) => {
-      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-      return dirs[Math.round(deg / 22.5) % 16];
-    };
-
-    const fmt = (n, suffix='') => n == null ? '—' : `${Math.round(n)}${suffix}`;
-
-    async function loadLocation({lat, lon}, prefix){
-      // Open‑Meteo API — no key needed. Fahrenheit + mph + precipitation.
-      const url = new URL('https://api.open-meteo.com/v1/forecast');
-      url.search = new URLSearchParams({
-        latitude: lat,
-        longitude: lon,
-        current: ['temperature_2m','apparent_temperature','is_day','precipitation','weather_code','wind_speed_10m','wind_direction_10m'].join(','),
-        hourly: ['temperature_2m','precipitation_probability','weather_code','wind_speed_10m'].join(','),
-        forecast_days: 2,
-        timezone: 'auto',
-        temperature_unit: 'fahrenheit',
-        wind_speed_unit: 'mph',
-        precipitation_unit: 'inch'
-      }).toString();
-
+    // Append USGS loader without touching existing weather code
+    async function loadUSGS(site, prefix){
+      const url = new URL('https://waterservices.usgs.gov/nwis/iv/');
+      url.search = new URLSearchParams({ format:'json', sites: site, parameterCd: '00060,00065' }).toString();
       try{
         const res = await fetch(url.toString());
-        if(!res.ok) throw new Error('Network response was not ok');
+        if(!res.ok) throw new Error('USGS request failed');
         const data = await res.json();
-
-        const c = data.current;
-        const icon = codeToIcon(c.weather_code, c.is_day === 1);
-        const condText = codeToText(c.weather_code);
-        const badge = document.getElementById(`${prefix}-badge`);
-
-        // Update current
-        document.getElementById(`${prefix}-icon`).textContent = icon;
-        document.getElementById(`${prefix}-temp`).innerHTML = `${Math.round(c.temperature_2m)}<small>°F</small>`;
-        document.getElementById(`${prefix}-feels`).textContent = `${Math.round(c.apparent_temperature)}°F`;
-        document.getElementById(`${prefix}-wind`).textContent = `${Math.round(c.wind_speed_10m)} mph ${degToCompass(c.wind_direction_10m)}`;
-        document.getElementById(`${prefix}-precip`).textContent = `${c.precipitation?.toFixed(2)} in`;
-        document.getElementById(`${prefix}-cond`).textContent = condText;
-        document.getElementById(`${prefix}-updated`).textContent = `Updated ${new Date().toLocaleString()}`;
-
-        // Badge mood based on wind + precip
-        const windy = (c.wind_speed_10m || 0) >= 15;
-        const wet = (c.precipitation || 0) >= 0.05;
-        const cls = wet ? 'bad' : windy ? 'warn' : 'ok';
-        badge.className = `badge ${cls}`;
-        badge.textContent = wet ? 'Wet' : windy ? 'Breezy' : 'Good weather';
-
-        // Build next 12 hours forecast snapshots
-        const hoursEl = document.getElementById(`${prefix}-forecast`);
-        hoursEl.innerHTML = '';
-        const now = Date.now();
-        const times = data.hourly.time.map(t => new Date(t).getTime());
-        for(let i=0, shown=0; i<times.length && shown<12; i++){
-          if(times[i] < now) continue;
-          const temp = data.hourly.temperature_2m[i];
-          const wcode = data.hourly.weather_code[i];
-          const pprob = data.hourly.precipitation_probability[i];
-          const wicon = codeToIcon(wcode, true);
-          const tlabel = new Date(times[i]).toLocaleTimeString([], {hour:'numeric'});
-
-          const box = document.createElement('div');
-          box.className = 'hour';
-          box.innerHTML = `
-            <div class="tt">${tlabel}</div>
-            <div class="big-icon" aria-hidden="true">${wicon}</div>
-            <div class="t">${Math.round(temp)}°</div>
-            <div class="tt">💧 ${pprob ?? 0}%</div>
-          `;
-          hoursEl.appendChild(box);
-          shown++;
+        const series = data.value?.timeSeries || [];
+        const findVal = (code) => {
+          const s = series.find(s => s.variable?.variableCode?.[0]?.value === code);
+          const v = s?.values?.[0]?.value; if(!v || v.length === 0) return null;
+          return v[v.length-1]; // { value, dateTime }
+        };
+        const q = findVal('00060'); // discharge cfs
+        const h = findVal('00065'); // gage height ft
+        if(q){ document.getElementById(`${prefix}-flow`).textContent = `${Number(q.value).toLocaleString()} cfs`; }
+        if(h){ document.getElementById(`${prefix}-stage`).textContent = `${Number(h.value).toFixed(2)} ft`; }
+        const updatedIso = (q?.dateTime || h?.dateTime);
+        if(updatedIso){
+          const t = new Date(updatedIso);
+          const el = document.getElementById(`${prefix}-updated`);
+          if(el) el.textContent = `Updated ${t.toLocaleString()}`;
         }
-
-      } catch (e){
-        console.error(e);
-        document.getElementById(`${prefix}-updated`).textContent = 'Unable to load weather.';
-        const card = document.getElementById(`card-${prefix.split('-')[0]}`);
-        card && (card.style.opacity = .8);
+      } catch(err){
+        console.error(err);
+        const el = document.getElementById(`${prefix}-updated`);
+        if(el) el.textContent = 'Unable to load USGS data.';
       }
     }
 
-    // Kick off loads
-    loadLocation(LOCATIONS.middleburg, 'mid');
-    loadLocation(LOCATIONS.berryville, 'ber');
+    // Start USGS loads
+    loadUSGS('01643700','goose'); // Goose Creek near Middleburg, VA
+    loadUSGS('01636500','shen');  // Shenandoah River at Millville, WV
   </script>
 </body>
 </html>
