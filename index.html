@@ -75,19 +75,19 @@
     </section>
   </div>
 
-  <!-- Boyce + Shenandoah row -->
+  <!-- Berryville + Shenandoah row -->
   <div class="row">
-    <section class="card" id="boyce">
+    <section class="card" id="card-boyce">
       <h2>Boyce, VA (Shenandoah)</h2>
-      <div class="subtle" id="ber-updated">Loading…</div>
-      <div class="current"><div class="big-icon" id="ber-icon">⛅</div><div class="stack"><p class="temp" id="ber-temp">—<small>°F</small></p><div class="badge ok" id="ber-badge">Good weather</div></div></div>
+      <div class="subtle" id="boy-updated">Loading…</div>
+      <div class="current"><div class="big-icon" id="boy-icon">⛅</div><div class="stack"><p class="temp" id="boy-temp">—<small>°F</small></p><div class="badge ok" id="boy-badge">Good weather</div></div></div>
       <div class="meta">
-        <div class="metric"><div class="label">Feels like</div><div class="value" id="ber-feels">—</div></div>
-        <div class="metric"><div class="label">Wind</div><div class="value" id="ber-wind">—</div></div>
-        <div class="metric"><div class="label">Precip (1h)</div><div class="value" id="ber-precip">—</div></div>
-        <div class="metric"><div class="label">Conditions</div><div class="value" id="ber-cond">—</div></div>
+        <div class="metric"><div class="label">Feels like</div><div class="value" id="boy-feels">—</div></div>
+        <div class="metric"><div class="label">Wind</div><div class="value" id="boy-wind">—</div></div>
+        <div class="metric"><div class="label">Precip (1h)</div><div class="value" id="boy-precip">—</div></div>
+        <div class="metric"><div class="label">Conditions</div><div class="value" id="boy-cond">—</div></div>
       </div>
-      <div class="forecast" id="ber-forecast"></div>
+      <div class="forecast" id="boy-forecast"></div>
     </section>
     <section class="card" id="card-shen">
       <h2>Shenandoah River — at Millville</h2>
@@ -108,7 +108,7 @@
     // --- Coordinates ---
     const LOCATIONS = {
       middleburg: { name: 'Middleburg, VA', lat: 38.968, lon: -77.737 },
-        boyce: { name: 'Boyce, VA', lat: 39.091, lon: -78.059 }
+      boyce: { name: 'Boyce, VA', lat: 39.091, lon: -78.059 }
     };
 
     const codeToIcon = (code, isDay) => {
@@ -227,7 +227,7 @@
 
     // Kick off loads
     loadLocation(LOCATIONS.middleburg, 'mid');
-    loadLocation(LOCATIONS.boyce, 'ber');
+    loadLocation(LOCATIONS.boyce, 'boy');
     loadUSGS('01643700','goose');
     loadUSGS('01636500','shen');
   </script>
